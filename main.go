@@ -12,6 +12,47 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
+func getDeploymentObject() *appsv1.Deployment {
+	var numberOfReplica int32
+	numberOfReplica = 1
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "app",
+		},
+		Spec: appsv1.DeploymentSpec{
+			Replicas: &numberOfReplica,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": "app",
+				},
+			},
+			Template: core.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"app": "app",
+					},
+				},
+				Spec: core.PodSpec{
+					Containers: []core.Container{
+						{
+							Name:            "url-shorter",
+							Image:           "ductn4/urlshorter:1.0.0",
+							ImagePullPolicy: core.PullIfNotPresent,
+							Ports: []core.ContainerPort{
+								{
+									Name:          "container-port",
+									ContainerPort: 8000,
+									Protocol:      core.ProtocolTCP,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func getPodObject() *core.Pod {
 	return &core.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -58,6 +99,7 @@ func getServicePod() *core.Service {
 					TargetPort: intstr.IntOrString{
 						Type:   intstr.String,
 						StrVal: "container-port",
+						IntVal: 8000,
 					},
 				},
 			},
@@ -86,47 +128,49 @@ func main() {
 		panic(err)
 	}
 
-	var numberOfReplica int32
-	numberOfReplica = 2
+	// var numberOfReplica int32
+	// numberOfReplica = 1
 
 	deploymentsClient := clientset.AppsV1().Deployments(core.NamespaceDefault)
 
-	deployment := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "app",
-		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: &numberOfReplica,
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"app": "app",
-				},
-			},
-			Template: core.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"app": "app",
-					},
-				},
-				Spec: core.PodSpec{
-					Containers: []core.Container{
-						{
-							Name:            "green-rain",
-							Image:           "ductn4/green-rain",
-							ImagePullPolicy: core.PullIfNotPresent,
-							Ports: []core.ContainerPort{
-								{
-									Name:          "container-port",
-									ContainerPort: 8000,
-									Protocol:      core.ProtocolTCP,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
+	// deployment := &appsv1.Deployment{
+	// 	ObjectMeta: metav1.ObjectMeta{
+	// 		Name: "app",
+	// 	},
+	// 	Spec: appsv1.DeploymentSpec{
+	// 		Replicas: &numberOfReplica,
+	// 		Selector: &metav1.LabelSelector{
+	// 			MatchLabels: map[string]string{
+	// 				"app": "app",
+	// 			},
+	// 		},
+	// 		Template: core.PodTemplateSpec{
+	// 			ObjectMeta: metav1.ObjectMeta{
+	// 				Labels: map[string]string{
+	// 					"app": "app",
+	// 				},
+	// 			},
+	// 			Spec: core.PodSpec{
+	// 				Containers: []core.Container{
+	// 					{
+	// 						Name:            "url-shorter",
+	// 						Image:           "ductn4/urlshorter:1.0.0",
+	// 						ImagePullPolicy: core.PullIfNotPresent,
+	// 						Ports: []core.ContainerPort{
+	// 							{
+	// 								Name:          "container-port",
+	// 								ContainerPort: 8000,
+	// 								Protocol:      core.ProtocolTCP,
+	// 							},
+	// 						},
+	// 					},
+	// 				},
+	// 			},
+	// 		},
+	// 	},
+	// }
+
+	deployment := getDeploymentObject()
 
 	// Create Deployment
 	fmt.Println("Creating deployment...")
