@@ -122,121 +122,33 @@ func main() {
 
 	clientset := kubernetes.NewForConfigOrDie(config)
 
-	// nodeList, err := clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	deploymentsClient := clientset.AppsV1().Deployments(core.NamespaceDefault)
 
 	if err != nil {
 		panic(err)
 	}
 
-	// var numberOfReplica int32
-	// numberOfReplica = 1
-
-	deploymentsClient := clientset.AppsV1().Deployments(core.NamespaceDefault)
-
-	// deployment := &appsv1.Deployment{
-	// 	ObjectMeta: metav1.ObjectMeta{
-	// 		Name: "app",
-	// 	},
-	// 	Spec: appsv1.DeploymentSpec{
-	// 		Replicas: &numberOfReplica,
-	// 		Selector: &metav1.LabelSelector{
-	// 			MatchLabels: map[string]string{
-	// 				"app": "app",
-	// 			},
-	// 		},
-	// 		Template: core.PodTemplateSpec{
-	// 			ObjectMeta: metav1.ObjectMeta{
-	// 				Labels: map[string]string{
-	// 					"app": "app",
-	// 				},
-	// 			},
-	// 			Spec: core.PodSpec{
-	// 				Containers: []core.Container{
-	// 					{
-	// 						Name:            "url-shorter",
-	// 						Image:           "ductn4/urlshorter:1.0.0",
-	// 						ImagePullPolicy: core.PullIfNotPresent,
-	// 						Ports: []core.ContainerPort{
-	// 							{
-	// 								Name:          "container-port",
-	// 								ContainerPort: 8000,
-	// 								Protocol:      core.ProtocolTCP,
-	// 							},
-	// 						},
-	// 					},
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// }
-
-	deployment := getDeploymentObject()
-
 	// Create Deployment
+	deployment := getDeploymentObject()
 	fmt.Println("Creating deployment...")
 	result, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
+
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
 
-	// for _, n := range nodeList.Items {
-	// 	fmt.Println(n.Name)
-	// }
-
-	// serviceClient := clientset.AppsV1().Services(apiv1.NamespaceDefault)
-
-	// newService := &corev1.Service{
-	// 	ObjectMeta: metav1.ObjectMeta{
-	// 		Name: "serviceapp",
-	// 		Namespace: "default",
-	// 		Labels: map[string]string{
-	// 			"app": "myapp",
-	// 		},
-	// 	},
-	// 	Spec: corev1.ServiceSpec{
-	// 		Ports:    nil,
-	// 		Selector: nil,
-	// 	},
-	// }
-
-	// // Create Service
-	// fmt.Println("Creating service...")
-	// // result, err := servicesClient.Create(service)
-	// service, err := clientset.CoreV1().Services("default").Create(context.Background(), newService, metav1.CreateOptions{})
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// Deployment
-	// newPod := &core.Pod{
-	// 	ObjectMeta: metav1.ObjectMeta{
-	// 		Name: "test-pod",
-	// 	},
-	// 	Spec: core.PodSpec{
-	// 		Containers: []core.Container{
-	// 			{
-	// 				Name:  "greenrain",
-	// 				Image: "ductn4/green-rain:latest",
-	// 				// Command: []string{"sleep", "10000"},
-	// 			},
-	// 		},
-	// 	},
-	// }
-
+	// Create Service
 	svc := getServicePod()
+	fmt.Println("Creating service...")
 	svc, err = clientset.CoreV1().Services(svc.Namespace).Create(context.Background(), svc, metav1.CreateOptions{})
 
 	if err != nil {
 		panic(err)
 	}
-
-	// pod := getPodObject()
-	// pod, err = clientset.CoreV1().Pods(pod.Namespace).Create(context.Background(), pod, metav1.CreateOptions{})
-
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// fmt.Println(pod)
+	fmt.Printf("Created service %q.\n", result.GetObjectMeta().GetName())
 }
